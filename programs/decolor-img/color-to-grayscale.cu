@@ -65,11 +65,12 @@ void rgbToGrayscaleKernel(unsigned char* P_in, unsigned char* P_out, int height,
 void rgbToGrayscale(unsigned char* P_in_h, unsigned char* P_out_h, int height, int width) {
     unsigned char *P_in_d, *P_out_d;
     int size = height * width * 3;
+    int outSize = height * width;
     cudaMalloc((void **) &P_in_d, size);
-    cudaMalloc((void **) &P_out_d, size);
+    cudaMalloc((void **) &P_out_d, outSize);
 
     cudaMemcpy(P_in_d, P_in_h, size, cudaMemcpyHostToDevice);
-    cudaMemcpy(P_out_d, P_out_h, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(P_out_d, P_out_h, outSize, cudaMemcpyHostToDevice);
 
     int threadCount = 12;
 
@@ -78,7 +79,7 @@ void rgbToGrayscale(unsigned char* P_in_h, unsigned char* P_out_h, int height, i
 
     rgbToGrayscaleKernel<<<gridDim, blockDim>>>(P_in_d, P_out_d, height, width);
 
-    cudaMemcpy(P_out_h, P_out_d, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(P_out_h, P_out_d, outSize, cudaMemcpyDeviceToHost);
 
     cudaFree(P_in_d);
     cudaFree(P_out_d);
@@ -88,15 +89,15 @@ int main(int argc, char** argv) {
     // data prep (e.g. import an image)
     printf("started main\n");
     int height, width, channels;
-    char* sourcePath = "fake_img.jpg";
-    unsigned char* imgArr = imageToArray("fake_img.jpg", &width, &height, &channels);
+    char* sourcePath = "../fake_img.jpg";
+    unsigned char* imgArr = imageToArray("../fake_img.jpg", &width, &height, &channels);
     printf("height: %d, width: %d\n", height, width);
     unsigned char* transformedImgArr= new unsigned char[height * width];
 
     rgbToGrayscale(imgArr, transformedImgArr, height, width);
 
     char* savePath = new char[256];
-    sprintf(savePath, "transformed_%s", sourcePath);
+    sprintf(savePath, "transformed_fake_img.jpg", sourcePath);
     int grayChannels = 1;
     int* grayChannelsPtr = &grayChannels;
     saveImageFromData(savePath, transformedImgArr, &width, &height, grayChannelsPtr);

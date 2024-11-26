@@ -21,9 +21,9 @@ void vecAdd(float* A_h, float* B_h, float* C_h, int n) {
     cudaMemcpy(B_d, B_h, size, cudaMemcpyHostToDevice);
 
     int threadCount = 12;
-    vecAddKernel<<<ceil(n / threadCount), threadCount>>>(A_d, B_d, C_d, n);
+    vecAddKernel<<<ceil(n * 1.0 / threadCount), threadCount>>>(A_d, B_d, C_d, n);
 
-    cudaMemcpy(&C_h, &C_d, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(C_h, C_d, size, cudaMemcpyDeviceToHost);
 
     cudaFree(A_d);
     cudaFree(B_d);
@@ -34,6 +34,15 @@ int main(int argc, char** argv) {
     int n = 4; // size of vector
     float* A_h = new float[n];
     float* B_h = new float[n];
+    // Initialize A_h with the first n odd numbers
+    for (int i = 0; i < n; i++) {
+        A_h[i] = 2 * i + 1;
+    }
+
+    // Initialize B_h with the first n even numbers
+    for (int i = 0; i < n; i++) {
+        B_h[i] = 2 * i;
+    }
     float* C_h = new float[n];
 
     // for (int i = 0; i < n; i++) {
